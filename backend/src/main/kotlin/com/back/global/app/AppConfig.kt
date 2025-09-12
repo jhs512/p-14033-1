@@ -8,10 +8,12 @@ import com.back.domain.post.postUser.entity.PostUser
 import com.back.domain.post.postUser.repository.PostUserAttrRepository
 import com.back.standard.util.Ut
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.tika.Tika
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import org.springframework.core.io.ClassPathResource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 
@@ -19,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AppConfig(
     environment: Environment,
     objectMapper: ObjectMapper,
+    tika: Tika,
     memberAttrRepository: MemberAttrRepository,
     postUserAttrRepository: PostUserAttrRepository,
     memberRepository: MemberRepository,
@@ -29,6 +32,7 @@ class AppConfig(
     init {
         Companion.environment = environment
         Ut.json.objectMapper = objectMapper
+        Ut.file.tika = tika
         BaseMember.memberRepository = memberRepository
         BaseMember.memberAttrRepository = memberAttrRepository
         Member.attrRepository = memberAttrRepository
@@ -66,5 +70,21 @@ class AppConfig(
         val cookieDomain: String by lazy { _cookieDomain }
         val siteFrontUrl: String by lazy { _siteFrontUrl }
         val siteBackUrl: String by lazy { _siteBackUrl }
+
+        val resourcesSampleDirPath: String by lazy {
+            val resource = ClassPathResource("sample")
+
+            if (resource.exists()) {
+                resource.file.absolutePath
+            } else if (Ut.file.exists("src/test/resources/sample")) {
+                "src/test/resources/sample"
+            } else {
+                "backend/src/test/resources/sample"
+            }
+        }
+
+        val tempDirPath: String by lazy {
+            System.getProperty("java.io.tmpdir")
+        }
     }
 }
