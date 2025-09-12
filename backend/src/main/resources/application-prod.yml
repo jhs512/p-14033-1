@@ -1,0 +1,24 @@
+spring:
+  autoconfigure:
+    exclude:
+  data:
+    redis:
+      host: redis_1
+      password: ${SPRING__DATA__REDIS__PASSWORD}
+  datasource:
+    url: jdbc:mysql://mysql_1:3306/${SPRING__DATASOURCE__URL___DB_NAME}
+    username: lldjlocal
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.orm.jdbc.extract: INFO
+    org.springframework.transaction.interceptor: INFO
+    com.back: INFO
+custom:
+  site:
+    cookieDomain: "${custom.prod.cookieDomain}"
+    frontUrl: "${custom.prod.frontUrl}"
+    backUrl: "${custom.prod.backUrl}"
+    name: p-14044-1
