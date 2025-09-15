@@ -1,5 +1,7 @@
 package com.back.standard.sampleResource
 
+import com.back.standard.util.Ut
+
 enum class SampleResource(
     val fileName: String,
     val width: Int,
@@ -18,5 +20,9 @@ enum class SampleResource(
     IMG_WEBP_SAMPLE1("sample1-1280x531.webp", 1280, 531, 0),
     VIDEO_MOV_SAMPLE1("sample1-1280x720x319s.mov", 1280, 720, 319),
     VIDEO_MP4_SAMPLE1("sample1-640x480x5s.mp4", 640, 480, 5),
-    VIDEO_MP4_SAMPLE2("sample2-1280x720x117s.mp4", 1280, 720, 117)
+    VIDEO_MP4_SAMPLE2("sample2-1280x720x117s.mp4", 1280, 720, 117);
+
+    val fileExt: String by lazy {
+        Ut.file.getFileExt(fileName)
+    }
 }

@@ -15,4 +15,10 @@ class FileUtTest {
     fun t1() {
         assertThat(SampleResource.IMG_JPG_SAMPLE1.fileName).isEqualTo("sample1-200x300.jpg")
     }
+
+    @Test
+    @DisplayName("SampleResource.IMG_JPG_SAMPLE1.fileExt")
+    fun t2() {
+        assertThat(SampleResource.IMG_JPG_SAMPLE1.fileExt).isEqualTo("jpg")
+    }
 }

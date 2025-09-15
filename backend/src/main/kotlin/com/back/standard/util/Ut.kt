@@ -102,4 +102,16 @@ object Ut {
             }).start()
         }
     }
+
+    object file {
+        fun getFileExt(filePath: String): String {
+            val lastDotIndex = filePath.lastIndexOf('.')
+
+            return if (lastDotIndex != -1 && lastDotIndex < filePath.length - 1) {
+                filePath.substring(lastDotIndex + 1).lowercase()
+            } else {
+                "tmp"
+            }
+        }
+    }
 }
