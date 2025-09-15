@@ -1,6 +1,7 @@
 package com.back.standard.sampleResource
 
 import com.back.standard.util.Ut
+import org.springframework.core.io.ClassPathResource
 
 enum class SampleResource(
     val fileName: String,
@@ -32,5 +33,9 @@ enum class SampleResource(
 
     val fileExtType2Code by lazy {
         Ut.file.getFileExtType2CodeFromFileExt(fileExt)
+    }
+
+    val filePath by lazy {
+        "${ClassPathResource("sample").file.absolutePath}/$fileExtTypeCode/$fileExtType2Code/$fileName"
     }
 }

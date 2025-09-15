@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import java.io.File
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -32,5 +33,11 @@ class FileUtTest {
     @DisplayName("SampleResource.IMG_JPG_SAMPLE1.fileExtType2Code")
     fun t4() {
         assertThat(SampleResource.IMG_JPG_SAMPLE1.fileExtType2Code).isEqualTo("jpg")
+    }
+
+    @Test
+    @DisplayName("SampleResource.IMG_JPG_SAMPLE1.filePath")
+    fun t5() {
+        assertThat(File(SampleResource.IMG_JPG_SAMPLE1.filePath).exists())
     }
 }
