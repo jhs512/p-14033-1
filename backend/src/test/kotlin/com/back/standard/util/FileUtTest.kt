@@ -27,4 +27,10 @@ class FileUtTest {
     fun t3() {
         assertThat(SampleResource.IMG_JPG_SAMPLE1.fileExtTypeCode).isEqualTo("img")
     }
+
+    @Test
+    @DisplayName("SampleResource.IMG_JPG_SAMPLE1.fileExtType2Code")
+    fun t4() {
+        assertThat(SampleResource.IMG_JPG_SAMPLE1.fileExtType2Code).isEqualTo("jpg")
+    }
 }

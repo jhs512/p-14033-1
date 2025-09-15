@@ -122,5 +122,12 @@ object Ut {
                 else -> "etc"
             }
         }
+
+        fun getFileExtType2CodeFromFileExt(ext: String): String {
+            return when (ext.lowercase()) {
+                "jpeg", "jpg" -> "jpg"
+                else -> ext
+            }
+        }
     }
 }

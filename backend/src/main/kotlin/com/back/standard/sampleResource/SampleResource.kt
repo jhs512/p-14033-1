@@ -29,4 +29,8 @@ enum class SampleResource(
     val fileExtTypeCode by lazy {
         Ut.file.getFileExtTypeCodeFromFileExt(fileExt)
     }
+
+    val fileExtType2Code by lazy {
+        Ut.file.getFileExtType2CodeFromFileExt(fileExt)
+    }
 }
