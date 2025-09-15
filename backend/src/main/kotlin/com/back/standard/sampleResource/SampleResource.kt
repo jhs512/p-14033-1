@@ -1,5 +1,6 @@
 package com.back.standard.sampleResource
 
+import com.back.global.app.AppConfig
 import com.back.standard.util.Ut
 import org.springframework.core.io.ClassPathResource
 
@@ -37,5 +38,11 @@ enum class SampleResource(
 
     val filePath by lazy {
         "${ClassPathResource("sample").file.absolutePath}/$fileExtTypeCode/$fileExtType2Code/$fileName"
+    }
+
+    fun makeCopy(): String {
+        val newFilePath = "${AppConfig.tempDirPath}/$fileName"
+        Ut.file.copy(filePath, newFilePath)
+        return newFilePath
     }
 }

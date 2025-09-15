@@ -3,7 +3,9 @@ package com.back.standard.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import java.nio.file.Path
 import java.util.*
+import kotlin.io.path.*
 
 object Ut {
     object jwt {
@@ -128,6 +130,21 @@ object Ut {
                 "jpeg", "jpg" -> "jpg"
                 else -> ext
             }
+        }
+
+        fun copy(src: String, dest: String) {
+            val source = Path.of(src)
+            val target = Path.of(dest).let {
+                if (it.exists() && it.isDirectory()) it.resolve(source.fileName) else it
+            }
+
+            requireNotNull(target.parent).createDirectories()
+
+            source.copyTo(target, overwrite = true)
+        }
+
+        fun delete(filePath: String) {
+            Path.of(filePath).deleteIfExists()
         }
     }
 }

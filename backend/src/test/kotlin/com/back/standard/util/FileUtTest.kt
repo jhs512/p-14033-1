@@ -40,4 +40,13 @@ class FileUtTest {
     fun t5() {
         assertThat(File(SampleResource.IMG_JPG_SAMPLE1.filePath).exists())
     }
+
+    @Test
+    @DisplayName("SampleResource.IMG_JPG_SAMPLE1.makeCopy()")
+    fun t6() {
+        val sample1Copied = SampleResource.IMG_JPG_SAMPLE1.makeCopy()
+
+        assertThat(File(sample1Copied).exists())
+        Ut.file.delete(sample1Copied)
+    }
 }

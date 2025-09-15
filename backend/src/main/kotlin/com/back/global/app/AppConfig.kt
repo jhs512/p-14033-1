@@ -63,8 +63,12 @@ class AppConfig(
         private lateinit var _siteFrontUrl: String
         private lateinit var _siteBackUrl: String
 
-        val cookieDomain: String by lazy { _cookieDomain }
-        val siteFrontUrl: String by lazy { _siteFrontUrl }
-        val siteBackUrl: String by lazy { _siteBackUrl }
+        val cookieDomain by lazy { _cookieDomain }
+        val siteFrontUrl by lazy { _siteFrontUrl }
+        val siteBackUrl by lazy { _siteBackUrl }
+
+        val tempDirPath by lazy {
+            System.getProperty("java.io.tmpdir")!!
+        }
     }
 }
