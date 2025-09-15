@@ -22,7 +22,11 @@ enum class SampleResource(
     VIDEO_MP4_SAMPLE1("sample1-640x480x5s.mp4", 640, 480, 5),
     VIDEO_MP4_SAMPLE2("sample2-1280x720x117s.mp4", 1280, 720, 117);
 
-    val fileExt: String by lazy {
+    val fileExt by lazy {
         Ut.file.getFileExt(fileName)
+    }
+
+    val fileExtTypeCode by lazy {
+        Ut.file.getFileExtTypeCodeFromFileExt(fileExt)
     }
 }

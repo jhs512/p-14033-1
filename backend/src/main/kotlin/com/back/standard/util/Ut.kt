@@ -113,5 +113,14 @@ object Ut {
                 "tmp"
             }
         }
+
+        fun getFileExtTypeCodeFromFileExt(ext: String): String {
+            return when (ext.lowercase()) {
+                "jpeg", "jpg", "gif", "png", "svg", "webp" -> "img"
+                "mp4", "avi", "mov" -> "video"
+                "mp3", "m4a" -> "audio"
+                else -> "etc"
+            }
+        }
     }
 }
