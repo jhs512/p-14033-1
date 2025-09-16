@@ -1,5 +1,7 @@
 package com.back.standard.util
 
+import com.back.standard.extensions.base64Decode
+import com.back.standard.extensions.base64Encode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -107,6 +109,7 @@ object Ut {
     }
 
     object file {
+        private const val ORIGINAL_FILE_NAME_SEPARATOR = "--originalFileName_"
         lateinit var TMP_DIR_PATH: String
 
         fun getFileExt(filePath: String): String {
@@ -161,7 +164,7 @@ object Ut {
                 .ifEmpty { "unknown" }
             val ext = getFileExt(originFileName)
             val finalFileName =
-                "download_${System.currentTimeMillis()}__${originFileName}.$ext"
+                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$ext"
             val filePath = Path.of(TMP_DIR_PATH, finalFileName)
 
             uri.toURL().openStream().use { input ->
@@ -171,6 +174,24 @@ object Ut {
             }
 
             return filePath.toString()
+        }
+
+        fun getOriginFileName(filePath: String): String {
+            val path = Path.of(filePath)
+
+            val fileName = path.fileName.toString()
+
+            if (!fileName.contains(ORIGINAL_FILE_NAME_SEPARATOR)) return fileName
+
+            val encodedOriginFileName =
+                fileName.substringAfter(ORIGINAL_FILE_NAME_SEPARATOR, "")
+                    .substringBeforeLast('.', "")
+
+            return if (encodedOriginFileName.isNotEmpty()) {
+                encodedOriginFileName.base64Decode()
+            } else {
+                "unknown"
+            }
         }
     }
 }

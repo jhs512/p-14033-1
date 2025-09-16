@@ -69,4 +69,16 @@ class FileUtTest {
 
         Ut.file.delete(downloadFilePath)
     }
+
+    @Test
+    @DisplayName("파일 다운로드 후 생성되는 파일의 파일명에 원본 파일명 포함시킴, 그래야 나중에 원본 파일명 복원 가능")
+    fun t9() {
+        val downloadFilePath = Ut.file.download("https://placehold.co/600x600?text=U_U")
+
+        val originFileName = Ut.file.getOriginFileName(downloadFilePath)
+
+        assertThat(originFileName).isEqualTo("600x600")
+
+        Ut.file.delete(downloadFilePath)
+    }
 }
