@@ -29,6 +29,7 @@ class AppConfig(
     init {
         Companion.environment = environment
         Ut.json.objectMapper = objectMapper
+        Ut.file.TMP_DIR_PATH = System.getProperty("java.io.tmpdir")!!
         BaseMember.memberRepository = memberRepository
         BaseMember.memberAttrRepository = memberAttrRepository
         Member.attrRepository = memberAttrRepository

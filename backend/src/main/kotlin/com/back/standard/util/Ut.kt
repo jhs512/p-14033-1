@@ -3,6 +3,7 @@ package com.back.standard.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import java.net.URI
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.*
@@ -106,6 +107,8 @@ object Ut {
     }
 
     object file {
+        lateinit var TMP_DIR_PATH: String
+
         fun getFileExt(filePath: String): String {
             val lastDotIndex = filePath.lastIndexOf('.')
 
@@ -145,6 +148,29 @@ object Ut {
 
         fun delete(filePath: String) {
             Path.of(filePath).deleteIfExists()
+        }
+
+        fun exists(filePath: String): Boolean {
+            return Path.of(filePath).exists()
+        }
+
+        fun download(url: String): String {
+            val uri = URI(url)
+            val path = uri.path
+            val originFileName = path.substringAfterLast('/')
+                .ifEmpty { "unknown" }
+            val ext = getFileExt(originFileName)
+            val finalFileName =
+                "download_${System.currentTimeMillis()}__${originFileName}.$ext"
+            val filePath = Path.of(TMP_DIR_PATH, finalFileName)
+
+            uri.toURL().openStream().use { input ->
+                filePath.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            return filePath.toString()
         }
     }
 }

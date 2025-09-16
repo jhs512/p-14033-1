@@ -1,5 +1,7 @@
 package com.back.standard.util
 
+import com.back.standard.extensions.base64Decode
+import com.back.standard.extensions.base64Encode
 import com.back.standard.sampleResource.SampleResource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -48,5 +50,23 @@ class FileUtTest {
 
         assertThat(File(sample1Copied).exists())
         Ut.file.delete(sample1Copied)
+    }
+
+    @Test
+    @DisplayName("Base64 Encode/Decode")
+    fun t7() {
+        val encoded = "abcd".base64Encode()
+
+        assertThat(encoded.base64Decode()).isEqualTo("abcd")
+    }
+
+    @Test
+    @DisplayName("download by url")
+    fun t8() {
+        val downloadFilePath = Ut.file.download("https://placehold.co/600x600?text=U_U")
+
+        assertThat(Ut.file.exists(downloadFilePath)).isTrue()
+
+        Ut.file.delete(downloadFilePath)
     }
 }
