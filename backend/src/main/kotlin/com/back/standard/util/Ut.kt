@@ -5,6 +5,7 @@ import com.back.standard.extensions.base64Encode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.file.Path
 import java.util.*
@@ -111,6 +112,33 @@ object Ut {
     object file {
         private const val ORIGINAL_FILE_NAME_SEPARATOR = "--originalFileName_"
         lateinit var TMP_DIR_PATH: String
+        private val MIME_TYPE_MAP: LinkedHashMap<String, String> = linkedMapOf(
+            "application/json" to "json",
+            "text/plain" to "txt",
+            "text/html" to "html",
+            "text/css" to "css",
+            "application/javascript" to "js",
+            "image/jpeg" to "jpg",
+            "image/png" to "png",
+            "image/gif" to "gif",
+            "image/webp" to "webp",
+            "image/svg+xml" to "svg",
+            "application/pdf" to "pdf",
+            "application/xml" to "xml",
+            "application/zip" to "zip",
+            "application/gzip" to "gz",
+            "application/x-tar" to "tar",
+            "application/x-7z-compressed" to "7z",
+            "application/vnd.rar" to "rar",
+            "audio/mpeg" to "mp3",
+            "audio/mp4" to "m4a",
+            "audio/x-m4a" to "m4a",
+            "audio/wav" to "wav",
+            "video/quicktime" to "mov",
+            "video/mp4" to "mp4",
+            "video/webm" to "webm",
+            "video/x-msvideo" to "avi"
+        )
 
         fun getFileExt(filePath: String): String {
             val lastDotIndex = filePath.lastIndexOf('.')
@@ -163,11 +191,31 @@ object Ut {
             val originFileName = path.substringAfterLast('/')
                 .ifEmpty { "unknown" }
             val ext = getFileExt(originFileName)
+
+            // HttpURLConnection 열기
+            val connection = uri.toURL().openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connect()
+
+            val contentType: String = connection
+                .contentType
+                ?.replace(Regex("charset=.*"), "")
+                ?.replace(";", "")
+                ?.trim()
+                ?: ""
+
+            val finalExt = if (ext == "tmp" && contentType.isNotBlank()) {
+                MIME_TYPE_MAP[contentType] ?: "tmp"
+            } else {
+                ext
+            }
+
             val finalFileName =
-                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$ext"
+                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$finalExt"
             val filePath = Path.of(TMP_DIR_PATH, finalFileName)
 
-            uri.toURL().openStream().use { input ->
+            // 파일 저장
+            connection.inputStream.use { input ->
                 filePath.outputStream().use { output ->
                     input.copyTo(output)
                 }

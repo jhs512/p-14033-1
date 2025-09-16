@@ -81,4 +81,14 @@ class FileUtTest {
 
         Ut.file.delete(downloadFilePath)
     }
+
+    @Test
+    @DisplayName("http 응답헤더의 Content-Type 기반으로 확장자 추출")
+    fun t10() {
+        val downloadFilePath = Ut.file.download("https://placehold.co/600x600?text=U_U")
+
+        assertThat(Ut.file.getFileExt(downloadFilePath)).isEqualTo("svg")
+
+        Ut.file.delete(downloadFilePath)
+    }
 }
