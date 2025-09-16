@@ -8,6 +8,7 @@ import com.back.domain.post.postUser.entity.PostUser
 import com.back.domain.post.postUser.repository.PostUserAttrRepository
 import com.back.standard.util.Ut
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.tika.Tika
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AppConfig(
     environment: Environment,
     objectMapper: ObjectMapper,
+    tika: Tika,
     memberAttrRepository: MemberAttrRepository,
     postUserAttrRepository: PostUserAttrRepository,
     memberRepository: MemberRepository,
@@ -30,6 +32,7 @@ class AppConfig(
         Companion.environment = environment
         Ut.json.objectMapper = objectMapper
         Ut.file.TMP_DIR_PATH = tempDirPath
+        Ut.file.tika = tika
         BaseMember.memberRepository = memberRepository
         BaseMember.memberAttrRepository = memberAttrRepository
         Member.attrRepository = memberAttrRepository
