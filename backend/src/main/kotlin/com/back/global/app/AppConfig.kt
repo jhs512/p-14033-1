@@ -29,6 +29,7 @@ class AppConfig(
     init {
         Companion.environment = environment
         Ut.json.objectMapper = objectMapper
+        Ut.file.TMP_DIR_PATH = tempDirPath
         BaseMember.memberRepository = memberRepository
         BaseMember.memberAttrRepository = memberAttrRepository
         Member.attrRepository = memberAttrRepository
@@ -67,8 +68,7 @@ class AppConfig(
         val siteFrontUrl by lazy { _siteFrontUrl }
         val siteBackUrl by lazy { _siteBackUrl }
 
-        val tempDirPath by lazy {
-            System.getProperty("java.io.tmpdir")!!
-        }
+        val tempDirPath = System.getProperty("java.io.tmpdir")!!
+            .trimEnd(java.io.File.separatorChar)
     }
 }
