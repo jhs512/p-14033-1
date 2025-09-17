@@ -189,10 +189,7 @@ object Ut {
         }
 
         fun download(url: String): String {
-            val uri = URI(url)
-            val path = uri.path
-
-            val connection = uri.toURL().openConnection() as HttpURLConnection
+            val connection = URI(url).toURL().openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connect()
 
@@ -213,7 +210,7 @@ object Ut {
                 } ?: ""
 
             val originFileName = contentDispositionFileName.ifEmpty {
-                path.substringAfterLast('/')
+                connection.url.path.substringAfterLast('/')
                     .ifEmpty { "unknown" }
             }
 
