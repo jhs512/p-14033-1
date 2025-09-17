@@ -91,4 +91,15 @@ class FileUtTest {
 
         Ut.file.delete(downloadFilePath)
     }
+
+    @Test
+    @DisplayName("Content-Type 로도 파악할 수 없다면 Tika 사용")
+    fun t11() {
+        val downloadFilePath =
+            Ut.file.download("https://httpbin.org/response-headers?Content-Type=application/octet-stream")
+
+        assertThat(Ut.file.getFileExt(downloadFilePath)).isEqualTo("txt")
+
+        Ut.file.delete(downloadFilePath)
+    }
 }

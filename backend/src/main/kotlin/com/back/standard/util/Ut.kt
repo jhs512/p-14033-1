@@ -5,6 +5,7 @@ import com.back.standard.extensions.base64Encode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import org.apache.tika.Tika
 import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.file.Path
@@ -110,6 +111,7 @@ object Ut {
     }
 
     object file {
+        lateinit var tika: Tika
         private const val ORIGINAL_FILE_NAME_SEPARATOR = "--originalFileName_"
         lateinit var TMP_DIR_PATH: String
         private val MIME_TYPE_MAP: LinkedHashMap<String, String> = linkedMapOf(
@@ -221,7 +223,13 @@ object Ut {
                 }
             }
 
-            return filePath.toString()
+            val finalFilePath = if (finalExt == "tmp") {
+                restoreExtIfCanByTika(filePath.toString())
+            } else {
+                filePath.toString()
+            }
+
+            return finalFilePath
         }
 
         fun getOriginFileName(filePath: String): String {
@@ -240,6 +248,51 @@ object Ut {
             } else {
                 "unknown"
             }
+        }
+
+        fun getFileExtByTika(filePath: String): String {
+            val mimeType = tika.detect(filePath)
+                .takeUnless {
+                    it in setOf(
+                        "",
+                        "application/octet-stream",
+                        "application/x-unknown",
+                    )
+                }
+                ?: tika.detect(Path.of(filePath))
+
+            return MIME_TYPE_MAP[mimeType] ?: "tmp"
+        }
+
+        fun restoreExtIfCanByTika(filePath: String): String {
+            val extByTika = getFileExtByTika(filePath)
+
+            if (extByTika == "tmp")
+                return filePath
+
+            return renameExt(filePath, extByTika)
+        }
+
+        fun mv(src: String, dest: String) {
+            val source = Path.of(src)
+            val target = Path.of(dest).let {
+                if (it.exists() && it.isDirectory()) it.resolve(source.fileName) else it
+            }
+
+            requireNotNull(target.parent).createDirectories()
+
+            source.moveTo(target, overwrite = true)
+        }
+
+        fun renameExt(filePath: String, ext: String): String {
+            val path = Path.of(filePath)
+            val newFilePath = path.parent.resolve("${path.nameWithoutExtension}.$ext")
+
+            val dest = newFilePath.toString()
+
+            mv(filePath, dest)
+
+            return dest
         }
     }
 }
