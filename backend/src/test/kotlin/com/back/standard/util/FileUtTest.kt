@@ -2,6 +2,7 @@ package com.back.standard.util
 
 import com.back.standard.extensions.base64Decode
 import com.back.standard.extensions.base64Encode
+import com.back.standard.extensions.urlEncode
 import com.back.standard.sampleResource.SampleResource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -99,6 +100,28 @@ class FileUtTest {
             Ut.file.download("https://httpbin.org/response-headers?Content-Type=application/octet-stream")
 
         assertThat(Ut.file.getFileExt(downloadFilePath)).isEqualTo("txt")
+
+        Ut.file.delete(downloadFilePath)
+    }
+
+    @Test
+    @DisplayName("Content-Disposition 헤더에 확장자가 있는 경우 그것을 우선으로 사용")
+    fun t12() {
+        val downloadFilePath =
+            Ut.file.download("https://httpbin.org/response-headers?Content-Type=application/octet-stream&Content-Disposition=${"attachment; filename=\"sample.jpg\"".urlEncode()}")
+
+        assertThat(Ut.file.getOriginFileName(downloadFilePath)).isEqualTo("sample.jpg")
+        assertThat(Ut.file.getFileExt(downloadFilePath)).isEqualTo("jpg")
+
+        Ut.file.delete(downloadFilePath)
+    }
+
+    @Test
+    @DisplayName("Content-Disposition 헤더에 확장자가 있는 경우 그것을 우선으로 사용")
+    fun t13() {
+        val downloadFilePath = Ut.file.download("https://picsum.photos/id/237/200/300")
+
+        assertThat(Ut.file.getOriginFileName(downloadFilePath)).isEqualTo("237-200x300.jpg")
 
         Ut.file.delete(downloadFilePath)
     }

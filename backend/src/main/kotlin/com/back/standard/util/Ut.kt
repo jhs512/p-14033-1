@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.apache.tika.Tika
+import org.springframework.http.HttpHeaders
 import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.file.Path
@@ -190,11 +191,7 @@ object Ut {
         fun download(url: String): String {
             val uri = URI(url)
             val path = uri.path
-            val originFileName = path.substringAfterLast('/')
-                .ifEmpty { "unknown" }
-            val ext = getFileExt(originFileName)
 
-            // HttpURLConnection 열기
             val connection = uri.toURL().openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connect()
@@ -206,15 +203,28 @@ object Ut {
                 ?.trim()
                 ?: ""
 
-            val finalExt = if (ext == "tmp" && contentType.isNotBlank()) {
-                MIME_TYPE_MAP[contentType] ?: "tmp"
-            } else {
-                ext
+            val contentDispositionFileName = connection.getHeaderField(
+                HttpHeaders.CONTENT_DISPOSITION
+            )
+                ?.let { header ->
+                    val regex = Regex("filename=\"?([^\";]+)\"?")
+                    val matchResult = regex.find(header)
+                    matchResult?.groups?.get(1)?.value
+                } ?: ""
+
+            val originFileName = contentDispositionFileName.ifEmpty {
+                path.substringAfterLast('/')
+                    .ifEmpty { "unknown" }
             }
 
-            val finalFileName =
-                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$finalExt"
-            val filePath = Path.of(TMP_DIR_PATH, finalFileName)
+            val ext = getFileExt(originFileName)
+                .takeUnless { it == "tmp" }
+                ?: MIME_TYPE_MAP[contentType]
+                ?: "tmp"
+
+            val fileName =
+                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$ext"
+            val filePath = Path.of(TMP_DIR_PATH, fileName)
 
             // 파일 저장
             connection.inputStream.use { input ->
@@ -223,7 +233,7 @@ object Ut {
                 }
             }
 
-            val finalFilePath = if (finalExt == "tmp") {
+            val finalFilePath = if (ext == "tmp") {
                 restoreExtIfCanByTika(filePath.toString())
             } else {
                 filePath.toString()

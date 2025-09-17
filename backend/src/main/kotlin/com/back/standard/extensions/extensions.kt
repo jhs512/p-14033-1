@@ -18,6 +18,14 @@ fun String.base64Decode(): String {
     return Base64.UrlSafe.decode(this).decodeToString()
 }
 
+fun String.urlEncode(): String {
+    return java.net.URLEncoder.encode(this, StandardCharsets.UTF_8)
+}
+
+fun String.urlDecode(): String {
+    return java.net.URLDecoder.decode(this, StandardCharsets.UTF_8)
+}
+
 fun String.toCamelCase() =
     this
         .split("_")
