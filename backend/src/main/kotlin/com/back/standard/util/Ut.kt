@@ -189,54 +189,76 @@ object Ut {
         }
 
         fun download(url: String): String {
-            val connection = URI(url).toURL().openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connect()
-
-            val contentType: String = connection
-                .contentType
-                ?.replace(Regex("charset=.*"), "")
-                ?.replace(";", "")
-                ?.trim()
-                ?: ""
-
-            val contentDispositionFileName = connection.getHeaderField(
-                HttpHeaders.CONTENT_DISPOSITION
-            )
-                ?.let { header ->
-                    val regex = Regex("filename=\"?([^\";]+)\"?")
-                    val matchResult = regex.find(header)
-                    matchResult?.groups?.get(1)?.value
-                } ?: ""
-
-            val originFileName = contentDispositionFileName.ifEmpty {
-                connection.url.path.substringAfterLast('/')
-                    .ifEmpty { "unknown" }
+            val connection = (URI(url).toURL().openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = 15_000             // 커넥션 지연으로 소켓이 오래 붙어있는 상황 방지
+                readTimeout = 30_000                // 응답 지연으로 스트림이 열린 채로 남는 상황 방지
             }
 
-            val ext = getFileExt(originFileName)
-                .takeUnless { it == "tmp" }
-                ?: MIME_TYPE_MAP[contentType]
-                ?: "tmp"
+            try {
+                connection.connect()
 
-            val fileName =
-                "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$ext"
-            val filePath = Path.of(TMP_DIR_PATH, fileName)
+                // Content-Type 은 가능한 한 원시 헤더에서 꺼내며 charset 등은 제거
+                val contentType: String = connection
+                    .getHeaderField(HttpHeaders.CONTENT_TYPE)
+                    ?.replace(Regex("charset=.*"), "")
+                    ?.replace(";", "")
+                    ?.trim()
+                    ?: ""
 
-            // 파일 저장
-            connection.inputStream.use { input ->
-                filePath.outputStream().use { output ->
-                    input.copyTo(output)
+                // Content-Disposition 에서 filename/filename* 모두 대응 (RFC 5987)
+                val contentDispositionFileName: String = run {
+                    val header = connection.getHeaderField(HttpHeaders.CONTENT_DISPOSITION) ?: return@run ""
+                    // filename*=(UTF-8''...) 혹은 filename="..." 모두 매칭
+                    val rx = Regex("""filename\*?=(?:UTF-8''|")?([^\";]+)""", RegexOption.IGNORE_CASE)
+                    val m = rx.find(header) ?: return@run ""
+                    // RFC5987 방식의 % 인코딩 대응
+                    kotlin.runCatching { java.net.URLDecoder.decode(m.groupValues[1], "UTF-8") }
+                        .getOrElse { m.groupValues[1] }
                 }
-            }
 
-            val finalFilePath = if (ext == "tmp") {
-                restoreExtIfCanByTika(filePath.toString())
-            } else {
-                filePath.toString()
-            }
+                // 원본 파일명: Content-Disposition 우선, 없으면 URL 경로 마지막 세그먼트
+                val originFileName = contentDispositionFileName.ifEmpty {
+                    connection.url.path.substringAfterLast('/').ifEmpty { "unknown" }
+                }
 
-            return finalFilePath
+                // 확장자 결정: 기존 확장자(tmp 제외) 우선, 없으면 MIME 매핑, 그래도 없으면 tmp
+                val ext = getFileExt(originFileName)
+                    .takeUnless { it == "tmp" }
+                    ?: MIME_TYPE_MAP[contentType]
+                    ?: "tmp"
+
+                // 저장 경로 구성(원본 파일명은 base64 로 안전 보관)
+                val fileName =
+                    "${System.currentTimeMillis()}${ORIGINAL_FILE_NAME_SEPARATOR}${originFileName.base64Encode()}.$ext"
+                val filePath = Path.of(TMP_DIR_PATH, fileName)
+
+                // 응답 코드별 입력 스트림 선택
+                // - 2xx/3xx: inputStream
+                // - 4xx/5xx: errorStream(없으면 inputStream) → 스트림을 반드시 use 로 닫음
+                val status = connection.responseCode
+                val src =
+                    if (status >= 400) (connection.errorStream ?: connection.inputStream) else connection.inputStream
+
+                // 파일 저장(Buffered 로 I/O 호출 수 감소 → 리소스 사용 최적화)
+                src.use { input ->
+                    filePath.outputStream().buffered().use { output ->
+                        input.copyTo(output, DEFAULT_BUFFER_SIZE) // 기본 8KB 버퍼, 상황 따라 JVM 기본
+                    }
+                }
+
+                // 확장자 복원 시도(여전히 tmp 인 경우에만 Tika 사용)
+                val finalFilePath = if (ext == "tmp") {
+                    restoreExtIfCanByTika(filePath.toString())
+                } else {
+                    filePath.toString()
+                }
+
+                return finalFilePath
+            } finally {
+                //    스트림은 위에서 use 로 닫혔으므로 여기서는 disconnect 만 확실히 호출
+                kotlin.runCatching { connection.disconnect() }
+            }
         }
 
         fun getOriginFileName(filePath: String): String {
