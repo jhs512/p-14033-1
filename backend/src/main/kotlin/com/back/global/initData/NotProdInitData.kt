@@ -2,9 +2,11 @@ package com.back.global.initData
 
 import com.back.domain.member.member.service.MemberService
 import com.back.domain.post.post.service.PostService
+import com.back.domain.post.postGenFile.entity.PostGenFile
 import com.back.domain.post.postUser.service.PostUserService
 import com.back.global.app.CustomConfigProperties
 import com.back.standard.extensions.getOrThrow
+import com.back.standard.sampleResource.SampleResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Bean
@@ -81,5 +83,8 @@ class NotProdInitData(
         postService.writeComment(postUser2, post1, "댓글 1-3")
         postService.writeComment(postUser3, post2, "댓글 2-1")
         postService.writeComment(postUser3, post2, "댓글 2-2")
+
+        val genFile1FilePath = SampleResource.IMG_GIF_SAMPLE1.makeCopy()
+        postService.addGenFile(post1, PostGenFile.TypeCode.attachment, genFile1FilePath)
     }
 }

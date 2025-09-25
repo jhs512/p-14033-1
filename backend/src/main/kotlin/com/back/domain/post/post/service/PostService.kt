@@ -6,6 +6,7 @@ import com.back.domain.post.post.repository.PostRepository
 import com.back.domain.post.postComment.dto.PostCommentDto
 import com.back.domain.post.postComment.entity.PostComment
 import com.back.domain.post.postComment.event.PostCommentWrittenEvent
+import com.back.domain.post.postGenFile.entity.PostGenFile
 import com.back.domain.post.postUser.dto.PostUserDto
 import com.back.domain.post.postUser.entity.PostUser
 import com.back.standard.dto.PostSearchKeywordType1
@@ -96,4 +97,11 @@ class PostService(
                 sort.sortBy
             )
         )
+
+    fun addGenFile(post: Post, typeCode: PostGenFile.TypeCode, filePath: String) {
+        post.addGenFile(
+            typeCode,
+            filePath
+        )
+    }
 }

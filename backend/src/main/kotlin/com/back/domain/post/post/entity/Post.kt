@@ -1,6 +1,7 @@
 package com.back.domain.post.post.entity
 
 import com.back.domain.post.postComment.entity.PostComment
+import com.back.domain.post.postGenFile.entity.PostGenFile
 import com.back.domain.post.postUser.entity.PostUser
 import com.back.global.exception.ServiceException
 import com.back.global.jpa.entity.BaseTime
@@ -27,6 +28,13 @@ class Post(
         orphanRemoval = true
     )
     val comments: MutableList<PostComment> = mutableListOf()
+
+    @OneToMany(
+        mappedBy = "post",
+        cascade = [PERSIST, REMOVE],
+        orphanRemoval = true
+    )
+    val genFiles: MutableList<PostGenFile> = mutableListOf()
 
     var content: String
         get() = body.content
@@ -67,5 +75,11 @@ class Post(
 
     fun checkActorCanDelete(actor: PostUser) {
         if (author != actor) throw ServiceException("403-2", "${id}번 글 삭제권한이 없습니다.")
+    }
+
+    fun addGenFile(typeCode: PostGenFile.TypeCode, filePath: String) {
+        val postGenFile = PostGenFile(this, typeCode, filePath)
+
+        genFiles.add(postGenFile)
     }
 }
