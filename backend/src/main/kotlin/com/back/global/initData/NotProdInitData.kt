@@ -7,6 +7,7 @@ import com.back.domain.post.postUser.service.PostUserService
 import com.back.global.app.CustomConfigProperties
 import com.back.standard.extensions.getOrThrow
 import com.back.standard.sampleResource.SampleResource
+import com.back.standard.util.Ut
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Bean
@@ -86,5 +87,8 @@ class NotProdInitData(
 
         val genFile1FilePath = SampleResource.IMG_GIF_SAMPLE1.makeCopy()
         postService.addGenFile(post1, PostGenFile.TypeCode.attachment, genFile1FilePath)
+
+        val genFile2FilePath = Ut.file.download("https://placehold.co/600x600?text=U_U")
+        postService.addGenFile(post1, PostGenFile.TypeCode.attachment, genFile2FilePath)
     }
 }
